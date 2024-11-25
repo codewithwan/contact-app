@@ -2,6 +2,8 @@ import 'package:contact/const/app_constant.dart';
 import 'package:flutter/material.dart';
 import 'package:hugeicons/hugeicons.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:contact/components/profile_details.dart';
+import 'package:contact/components/profile_edit_form.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -61,6 +63,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       backgroundColor: Colors.grey.shade100,
       appBar: AppBar(
         toolbarHeight: 70,
@@ -78,357 +81,59 @@ class _ProfileScreenState extends State<ProfileScreen> {
       body: SingleChildScrollView(
         child: Column(
           children: [
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(16.0),
-              decoration: const BoxDecoration(
-                color: primaryColor,
-                borderRadius: BorderRadius.only(
-                  bottomLeft: Radius.circular(30),
-                  bottomRight: Radius.circular(30),
-                ),
-              ),
-              child: Row(
-                children: [
-                  CircleAvatar(
-                    radius: 50,
-                    backgroundColor: Colors.white,
-                    child: Text(
-                      _name.isNotEmpty ? _name[0].toUpperCase() : '',
-                      style: const TextStyle(
-                        fontFamily: inter,
-                        fontSize: 40,
-                        color: primaryColor,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          _name,
-                          style: const TextStyle(
-                            fontFamily: inter,
-                            fontSize: 24,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                          ),
-                        ),
-                        if (_phone.isNotEmpty) ...[
-                          const SizedBox(height: 8),
-                          Text(
-                            _phone,
-                            style: const TextStyle(
-                              fontFamily: inter,
-                              fontSize: 16,
-                              color: Colors.white70,
-                            ),
-                          ),
-                        ],
-                        if (_email.isNotEmpty) ...[
-                          const SizedBox(height: 8),
-                          Text(
-                            _email,
-                            style: const TextStyle(
-                              fontFamily: inter,
-                              fontSize: 16,
-                              color: Colors.white70,
-                            ),
-                          ),
-                        ],
-                        if (_organization.isNotEmpty) ...[
-                          const SizedBox(height: 8),
-                          Text(
-                            _organization,
-                            style: const TextStyle(
-                              fontFamily: inter,
-                              fontSize: 16,
-                              color: Colors.white70,
-                            ),
-                          ),
-                        ],
-                      ],
-                    ),
-                  ),
-                ],
-              ),
+            ProfileDetails(
+              name: _name,
+              phone: _phone,
+              email: _email,
+              organization: _organization,
+              isEditing: _isEditing,
+              onEdit: () {
+                setState(() {
+                  _isEditing = true;
+                });
+              },
             ),
-            if (!_isEditing) ...[
-              const SizedBox(height: 16),
-              ListTile(
-                leading: const Icon(HugeIcons.strokeRoundedUserAccount,
-                    color: Colors.black87),
-                title: const Text(
-                  'Perbarui Profil',
-                  style: TextStyle(fontFamily: inter, fontSize: 16),
-                ),
-                onTap: () {
+            if (_isEditing)
+              ProfileEditForm(
+                formKey: _formKey,
+                name: _name,
+                phone: _phone,
+                email: _email,
+                organization: _organization,
+                onNameChanged: (value) {
                   setState(() {
-                    _isEditing = true;
+                    _name = value;
                   });
                 },
-              ),
-              ListTile(
-                leading: const Icon(HugeIcons.strokeRoundedSettings01,
-                    color: Colors.black87),
-                title: const Text(
-                  'Pengaturan',
-                  style: TextStyle(fontFamily: inter, fontSize: 16),
-                ),
-                onTap: () {
-                  // Handle settings button press
+                onPhoneChanged: (value) {
+                  setState(() {
+                    _phone = value;
+                  });
                 },
-              ),
-              ListTile(
-                leading: const Icon(HugeIcons.strokeRoundedQrCode,
-                    color: Colors.black87),
-                title: const Text(
-                  'Tampilkan QR saya',
-                  style: TextStyle(fontFamily: inter, fontSize: 16),
-                ),
-                onTap: () {
-                  // Handle show QR button press
+                onEmailChanged: (value) {
+                  setState(() {
+                    _email = value;
+                  });
                 },
-              ),
-            ],
-            if (_isEditing)
-              Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Form(
-                  key: _formKey,
-                  child: Column(
-                    children: [
-                      const Align(
-                        alignment: Alignment.centerLeft,
-                        child: Text(
-                          'Name',
-                          style: TextStyle(
-                            fontFamily: inter,
-                            fontSize: 16,
-                            color: Colors.black87,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      TextFormField(
-                        initialValue: _name,
-                        decoration: InputDecoration(
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(20.0),
-                            borderSide: const BorderSide(color: Colors.grey),
-                          ),
-                          filled: true,
-                          fillColor: Colors.white,
-                          contentPadding: const EdgeInsets.symmetric(
-                              vertical: 16.0, horizontal: 20.0),
-                          focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(20.0),
-                            borderSide: const BorderSide(color: primaryColor),
-                          ),
-                        ),
-                        style: const TextStyle(color: Colors.black87),
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Please enter a name';
-                          }
-                          return null;
-                        },
-                        onChanged: (value) {
-                          setState(() {
-                            _name = value;
-                          });
-                        },
-                        onSaved: (value) {
-                          _name = value!;
-                        },
-                      ),
-                      const SizedBox(height: 16),
-                      const Align(
-                        alignment: Alignment.centerLeft,
-                        child: Text(
-                          'Phone',
-                          style: TextStyle(
-                            fontFamily: inter,
-                            fontSize: 16,
-                            color: Colors.black87,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      TextFormField(
-                        initialValue: _phone,
-                        decoration: InputDecoration(
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(20.0),
-                            borderSide: const BorderSide(color: Colors.grey),
-                          ),
-                          filled: true,
-                          fillColor: Colors.white,
-                          contentPadding: const EdgeInsets.symmetric(
-                              vertical: 16.0, horizontal: 20.0),
-                          focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(20.0),
-                            borderSide: const BorderSide(color: primaryColor),
-                          ),
-                        ),
-                        style: const TextStyle(color: Colors.black87),
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Please enter a phone number';
-                          }
-                          return null;
-                        },
-                        onChanged: (value) {
-                          setState(() {
-                            _phone = value;
-                          });
-                        },
-                        onSaved: (value) {
-                          _phone = value!;
-                        },
-                      ),
-                      const SizedBox(height: 16),
-                      const Align(
-                        alignment: Alignment.centerLeft,
-                        child: Text(
-                          'Email',
-                          style: TextStyle(
-                            fontFamily: inter,
-                            fontSize: 16,
-                            color: Colors.black87,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      TextFormField(
-                        initialValue: _email,
-                        decoration: InputDecoration(
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(20.0),
-                            borderSide: const BorderSide(color: Colors.grey),
-                          ),
-                          filled: true,
-                          fillColor: Colors.white,
-                          contentPadding: const EdgeInsets.symmetric(
-                              vertical: 16.0, horizontal: 20.0),
-                          focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(20.0),
-                            borderSide: const BorderSide(color: primaryColor),
-                          ),
-                        ),
-                        style: const TextStyle(color: Colors.black87),
-                        onChanged: (value) {
-                          setState(() {
-                            _email = value;
-                          });
-                        },
-                        onSaved: (value) {
-                          _email = value!;
-                        },
-                      ),
-                      const SizedBox(height: 16),
-                      const Align(
-                        alignment: Alignment.centerLeft,
-                        child: Text(
-                          'Organization',
-                          style: TextStyle(
-                            fontFamily: inter,
-                            fontSize: 16,
-                            color: Colors.black87,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      TextFormField(
-                        initialValue: _organization,
-                        decoration: InputDecoration(
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(20.0),
-                            borderSide: const BorderSide(color: Colors.grey),
-                          ),
-                          filled: true,
-                          fillColor: Colors.white,
-                          contentPadding: const EdgeInsets.symmetric(
-                              vertical: 16.0, horizontal: 20.0),
-                          focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(20.0),
-                            borderSide: const BorderSide(color: primaryColor),
-                          ),
-                        ),
-                        style: const TextStyle(color: Colors.black87),
-                        onChanged: (value) {
-                          setState(() {
-                            _organization = value;
-                          });
-                        },
-                        onSaved: (value) {
-                          _organization = value!;
-                        },
-                      ),
-                      const Divider(
-                        color: Colors.grey,
-                        thickness: 1,
-                        height: 32,
-                      ),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: [
-                          ElevatedButton(
-                            onPressed: () {
-                              if (_formKey.currentState!.validate()) {
-                                _formKey.currentState!.save();
-                                _saveProfile();
-                                setState(() {
-                                  _isEditing = false;
-                                });
-                              }
-                            },
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: primaryColor,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(30.0),
-                              ),
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 30.0,
-                                vertical: 15.0,
-                              ),
-                            ),
-                            child: const Text('Simpan',
-                                style: TextStyle(
-                                    fontSize: 16,
-                                    fontFamily: inter,
-                                    color: Colors.white)),
-                          ),
-                          const SizedBox(width: 16),
-                          ElevatedButton(
-                            onPressed: () {
-                              setState(() {
-                                _isEditing = false;
-                              });
-                            },
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.grey,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(30.0),
-                              ),
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 30.0,
-                                vertical: 15.0,
-                              ),
-                            ),
-                            child: const Text('Batal',
-                                style: TextStyle(
-                                    fontSize: 16,
-                                    fontFamily: inter,
-                                    color: Colors.white)),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
+                onOrganizationChanged: (value) {
+                  setState(() {
+                    _organization = value;
+                  });
+                },
+                onSave: () {
+                  if (_formKey.currentState!.validate()) {
+                    _formKey.currentState!.save();
+                    _saveProfile();
+                    setState(() {
+                      _isEditing = false;
+                    });
+                  }
+                },
+                onCancel: () {
+                  setState(() {
+                    _isEditing = false;
+                  });
+                },
               ),
           ],
         ),

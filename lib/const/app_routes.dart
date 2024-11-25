@@ -26,7 +26,7 @@ Route<dynamic> generateRoute(RouteSettings settings) {
   final args = settings.arguments as Map<String, dynamic>? ?? {};
   final noTransition = args['noTransition'] ?? false;
 
-  PageRouteBuilder _buildRoute(Widget page) {
+  PageRouteBuilder buildRoute(Widget page) {
     return PageRouteBuilder(
       pageBuilder: (context, animation, secondaryAnimation) => page,
       transitionsBuilder: (context, animation, secondaryAnimation, child) {
@@ -39,16 +39,16 @@ Route<dynamic> generateRoute(RouteSettings settings) {
 
   switch (settings.name) {
     case '/':
-      return _buildRoute(const ContactListScreen());
+      return buildRoute(const ContactListScreen());
     case '/profile':
-      return _buildRoute(const ProfileScreen());
+      return buildRoute(const ProfileScreen());
     case '/add_contact':
-      return _buildRoute(const AddContactScreen());
+      return buildRoute(const AddContactScreen());
     case '/edit_contact':
       final contact = args['contact'] as Contact;
-      return _buildRoute(EditContactScreen(contact: contact));
+      return buildRoute(EditContactScreen(contact: contact));
     default:
-      return _buildRoute(
+      return buildRoute(
         Scaffold(
           appBar: AppBar(title: const Text('Not Found')),
           body: const Center(child: Text('Page not found')),

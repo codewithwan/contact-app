@@ -1,6 +1,7 @@
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 import 'package:contact/models/contact.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class ContactService {
   static Database? _database;
@@ -64,5 +65,15 @@ class ContactService {
   static Future<void> deleteContact(int id) async {
     final db = await database;
     await db.delete('contacts', where: 'id = ?', whereArgs: [id]);
+  }
+
+  static Future<void> redirectToWhatsApp(String phone) async {
+    final formattedPhone = '62${phone.substring(1)}';
+    final url = 'https://api.whatsapp.com/send/?phone=$formattedPhone';
+    if (await canLaunch(url)) {
+      await launch(url);
+    } else {
+      throw 'Could not launch $url';
+    }
   }
 }

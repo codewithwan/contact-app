@@ -4,9 +4,12 @@ import 'package:hugeicons/hugeicons.dart';
 import 'package:provider/provider.dart';
 import 'package:contact/models/contact.dart';
 import 'package:contact/providers/contact_provider.dart';
+import 'package:contact/components/custom_text_form_field.dart';
+import 'package:contact/components/custom_switch_list_tile.dart';
+import 'package:flutter/services.dart';
 
 class EditContactScreen extends StatefulWidget {
-  final Contact contact; // Add final keyword
+  final Contact contact;
 
   EditContactScreen({super.key, required this.contact});
 
@@ -38,6 +41,7 @@ class _EditContactScreenState extends State<EditContactScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       backgroundColor: Colors.grey.shade100,
       appBar: AppBar(
         leading: IconButton(
@@ -188,7 +192,7 @@ class _EditContactScreenState extends State<EditContactScreen> {
   }
 
   Widget _buildEditForm() {
-    return Padding(
+    return SingleChildScrollView(
       padding: const EdgeInsets.all(16.0),
       child: Form(
         key: _formKey,
@@ -206,38 +210,23 @@ class _EditContactScreenState extends State<EditContactScreen> {
               ),
             ),
             const SizedBox(height: 8),
-            TextFormField(
+            CustomTextFormField(
               initialValue: _name,
-              decoration: InputDecoration(
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(20.0),
-                  borderSide: const BorderSide(color: Colors.grey),
-                ),
-                filled: true,
-                fillColor: Colors.white,
-                contentPadding: const EdgeInsets.symmetric(
-                    vertical: 16.0, horizontal: 20.0),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(20.0),
-                  borderSide: const BorderSide(color: primaryColor),
-                ),
-              ),
-              style: const TextStyle(color: Colors.black87),
+              onSaved: (value) {
+                _name = value!;
+              },
               validator: (value) {
                 if (value == null || value.isEmpty) {
                   return 'Please enter a name';
                 }
                 return null;
               },
-              onSaved: (value) {
-                _name = value!;
-              },
             ),
             const SizedBox(height: 16),
             const Align(
               alignment: Alignment.centerLeft,
               child: Text(
-                'nomor HP',
+                'Nomor HP',
                 style: TextStyle(
                   fontFamily: inter,
                   fontSize: 16,
@@ -246,32 +235,26 @@ class _EditContactScreenState extends State<EditContactScreen> {
               ),
             ),
             const SizedBox(height: 8),
-            TextFormField(
+            CustomTextFormField(
               initialValue: _phone,
-              decoration: InputDecoration(
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(20.0),
-                  borderSide: const BorderSide(color: Colors.grey),
-                ),
-                filled: true,
-                fillColor: Colors.white,
-                contentPadding: const EdgeInsets.symmetric(
-                    vertical: 16.0, horizontal: 20.0),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(20.0),
-                  borderSide: const BorderSide(color: primaryColor),
-                ),
-              ),
-              style: const TextStyle(color: Colors.black87),
+              onSaved: (value) {
+                _phone = value!;
+              },
               validator: (value) {
                 if (value == null || value.isEmpty) {
                   return 'Please enter a phone number';
                 }
+                final digitsOnly = value.replaceAll('-', '');
+                if (digitsOnly.length < 9 || digitsOnly.length > 13) {
+                  return 'Phone number must be between 9 and 13 digits';
+                }
                 return null;
               },
-              onSaved: (value) {
-                _phone = value!;
-              },
+              keyboardType: TextInputType.number,
+              inputFormatters: [
+                FilteringTextInputFormatter.digitsOnly,
+                _PhoneNumberFormatter(),
+              ],
             ),
             const SizedBox(height: 16),
             const Align(
@@ -286,23 +269,8 @@ class _EditContactScreenState extends State<EditContactScreen> {
               ),
             ),
             const SizedBox(height: 8),
-            TextFormField(
+            CustomTextFormField(
               initialValue: _email,
-              decoration: InputDecoration(
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(20.0),
-                  borderSide: const BorderSide(color: Colors.grey),
-                ),
-                filled: true,
-                fillColor: Colors.white,
-                contentPadding: const EdgeInsets.symmetric(
-                    vertical: 16.0, horizontal: 20.0),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(20.0),
-                  borderSide: const BorderSide(color: primaryColor),
-                ),
-              ),
-              style: const TextStyle(color: Colors.black87),
               onSaved: (value) {
                 _email = value!;
               },
@@ -311,7 +279,7 @@ class _EditContactScreenState extends State<EditContactScreen> {
             const Align(
               alignment: Alignment.centerLeft,
               child: Text(
-                'Inatansi',
+                'Instansi',
                 style: TextStyle(
                   fontFamily: inter,
                   fontSize: 16,
@@ -320,32 +288,16 @@ class _EditContactScreenState extends State<EditContactScreen> {
               ),
             ),
             const SizedBox(height: 8),
-            TextFormField(
+            CustomTextFormField(
               initialValue: _organization,
-              decoration: InputDecoration(
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(20.0),
-                  borderSide: const BorderSide(color: Colors.grey),
-                ),
-                filled: true,
-                fillColor: Colors.white,
-                contentPadding: const EdgeInsets.symmetric(
-                    vertical: 16.0, horizontal: 20.0),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(20.0),
-                  borderSide: const BorderSide(color: primaryColor),
-                ),
-              ),
-              style: const TextStyle(color: Colors.black87),
               onSaved: (value) {
                 _organization = value!;
               },
             ),
             const SizedBox(height: 16),
-            SwitchListTile(
-              title: const Text('Favorite'),
+            CustomSwitchListTile(
+              title: 'Favorit',
               value: _isFavorite,
-              activeColor: primaryColor,
               onChanged: (bool value) {
                 setState(() {
                   _isFavorite = value;
@@ -424,6 +376,25 @@ class _EditContactScreenState extends State<EditContactScreen> {
           ],
         ),
       ),
+    );
+  }
+}
+
+class _PhoneNumberFormatter extends TextInputFormatter {
+  @override
+  TextEditingValue formatEditUpdate(
+      TextEditingValue oldValue, TextEditingValue newValue) {
+    final text = newValue.text;
+    final buffer = StringBuffer();
+    for (int i = 0; i < text.length; i++) {
+      buffer.write(text[i]);
+      if ((i + 1) % 4 == 0 && i + 1 != text.length) {
+        buffer.write('-');
+      }
+    }
+    return newValue.copyWith(
+      text: buffer.toString(),
+      selection: TextSelection.collapsed(offset: buffer.length),
     );
   }
 }

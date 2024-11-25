@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:hugeicons/hugeicons.dart';
 import 'package:provider/provider.dart';
 import 'package:contact/providers/contact_provider.dart';
+import 'package:contact/components/contact_list.dart';
 
 class ContactListScreen extends StatefulWidget {
   const ContactListScreen({super.key});
@@ -77,6 +78,7 @@ class _ContactListScreenState extends State<ContactListScreen> {
     return DefaultTabController(
       length: 2,
       child: Scaffold(
+        resizeToAvoidBottomInset: false,
         backgroundColor: Colors.grey.shade100,
         appBar: AppBar(
           toolbarHeight: 70,
@@ -93,7 +95,6 @@ class _ContactListScreenState extends State<ContactListScreen> {
                     contentPadding: const EdgeInsets.symmetric(vertical: 10.0),
                     hintStyle: const TextStyle(
                         color: Colors.black54, fontFamily: inter),
-                    // ignore: prefer_const_constructors
                     prefixIcon: HugeIcon(
                         icon: HugeIcons.strokeRoundedSearch01,
                         color: Colors.black),
@@ -107,7 +108,7 @@ class _ContactListScreenState extends State<ContactListScreen> {
                   },
                 )
               : const Text(
-                  'FullContact',
+                  'Contactin',
                   style: TextStyle(
                     fontFamily: inter,
                     fontWeight: FontWeight.bold,
@@ -152,229 +153,17 @@ class _ContactListScreenState extends State<ContactListScreen> {
         ),
         body: TabBarView(
           children: [
-            Consumer<ContactProvider>(
-              builder: (context, provider, child) {
-                final contacts = provider.contacts
-                    .where((contact) => contact.name
-                        .toLowerCase()
-                        .contains(_searchQuery.toLowerCase()))
-                    .toList();
-                if (contacts.isEmpty) {
-                  return const Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Image(
-                          image: AssetImage(notFound),
-                          width: 250,
-                          height: 250,
-                        ),
-                        Text(
-                          'Belum ada kontak nih',
-                          style: TextStyle(fontSize: 27, color: Colors.black54),
-                        ),
-                        Text('Tambahkan kontak sekarang.',
-                            style:
-                                TextStyle(fontSize: 18, color: Colors.black54)),
-                      ],
-                    ),
-                  );
-                }
-                return ListView.builder(
-                  itemCount: contacts.length,
-                  itemBuilder: (context, index) {
-                    final contact = contacts[index];
-                    final isSelected = _selectedContacts.contains(contact.id);
-                    final previousContact =
-                        index > 0 ? contacts[index - 1] : null;
-                    final isNewGroup = previousContact == null ||
-                        contact.name[0].toUpperCase() !=
-                            previousContact.name[0].toUpperCase();
-                    return Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        if (isNewGroup)
-                          Padding(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 16.0, vertical: 8.0),
-                            child: Text(
-                              contact.name[0].toUpperCase(),
-                              style: const TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                        Container(
-                          color: isSelected ? Colors.grey[300] : Colors.white,
-                          child: ListTile(
-                            contentPadding: const EdgeInsets.symmetric(
-                                vertical: 10.0, horizontal: 16.0),
-                            leading: const CircleAvatar(
-                                radius: 25,
-                                backgroundColor: primaryColor,
-                                child: HugeIcon(
-                                  icon: HugeIcons.strokeRoundedUser,
-                                  color: Colors.white60,
-                                  size: 30.0,
-                                )),
-                            title: Text(
-                              contact.name,
-                              style: const TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontFamily: inter),
-                            ),
-                            subtitle: Text(contact.phone,
-                                style: const TextStyle(fontFamily: inter)),
-                            trailing: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                IconButton(
-                                  icon: Icon(
-                                    size: 30.0,
-                                    contact.isFavorite
-                                        ? Icons.star
-                                        : Icons.star_border,
-                                    color: contact.isFavorite
-                                        ? primaryColor
-                                        : null,
-                                  ),
-                                  onPressed: () {
-                                    setState(() {
-                                      contact.isFavorite = !contact.isFavorite;
-                                    });
-                                    provider.updateContact(contact);
-                                  },
-                                ),
-                                if (isSelected)
-                                  const HugeIcon(
-                                    icon: HugeIcons.strokeRoundedTick02,
-                                    color: Colors.black,
-                                    size: 30.0,
-                                  )
-                              ],
-                            ),
-                            onTap: () {
-                              if (_selectedContacts.isEmpty) {
-                                Navigator.of(context).pushNamed('/edit_contact',
-                                    arguments: {
-                                      'contact': contact,
-                                      'noTransition': true
-                                    });
-                              } else {
-                                _toggleSelection(contact.id!);
-                              }
-                            },
-                            onLongPress: () => _toggleSelection(contact.id!),
-                          ),
-                        ),
-                      ],
-                    );
-                  },
-                );
-              },
+            ContactList(
+              isFavorite: false,
+              searchQuery: _searchQuery,
+              selectedContacts: _selectedContacts,
+              toggleSelection: _toggleSelection,
             ),
-            Consumer<ContactProvider>(
-              builder: (context, provider, child) {
-                final favoriteContacts = provider.contacts
-                    .where((contact) => contact.isFavorite)
-                    .where((contact) => contact.name
-                        .toLowerCase()
-                        .contains(_searchQuery.toLowerCase()))
-                    .toList();
-                if (favoriteContacts.isEmpty) {
-                  return const Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Image(
-                          image: AssetImage(notFound),
-                          width: 250,
-                          height: 250,
-                        ),
-                        Text('Masih kosong nih..',
-                            style: TextStyle(
-                                fontFamily: inter,
-                                fontSize: 27,
-                                color: Colors.black54)),
-                        Text(
-                          'Belum ada yang istimewa ya',
-                          style: TextStyle(
-                              fontFamily: inter,
-                              fontSize: 18,
-                              color: Colors.black54),
-                        ),
-                      ],
-                    ),
-                  );
-                }
-                return ListView.builder(
-                  itemCount: favoriteContacts.length,
-                  itemBuilder: (context, index) {
-                    final contact = favoriteContacts[index];
-                    final isSelected = _selectedContacts.contains(contact.id);
-                    return Container(
-                      color: isSelected ? Colors.grey[300] : Colors.white,
-                      child: ListTile(
-                        contentPadding: const EdgeInsets.symmetric(
-                            vertical: 10.0, horizontal: 16.0),
-                        leading: const CircleAvatar(
-                          radius: 25,
-                          backgroundColor: primaryColor,
-                          child: HugeIcon(
-                              icon: HugeIcons.strokeRoundedUser,
-                              color: Colors.white60,
-                              size: 30.0),
-                        ),
-                        title: Text(
-                          contact.name,
-                          style: const TextStyle(
-                              fontWeight: FontWeight.bold, fontFamily: inter),
-                        ),
-                        subtitle: Text(contact.phone),
-                        trailing: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            IconButton(
-                              icon: Icon(
-                                size: 30.0,
-                                contact.isFavorite
-                                    ? Icons.star
-                                    : Icons.star_border,
-                                color: contact.isFavorite ? primaryColor : null,
-                              ),
-                              onPressed: () {
-                                setState(() {
-                                  contact.isFavorite = !contact.isFavorite;
-                                });
-                                provider.updateContact(contact);
-                              },
-                            ),
-                            if (isSelected)
-                              const HugeIcon(
-                                icon: HugeIcons.strokeRoundedTick02,
-                                color: Colors.black,
-                                size: 30.0,
-                              )
-                          ],
-                        ),
-                        onTap: () {
-                          if (_selectedContacts.isEmpty) {
-                            Navigator.of(context).pushNamed('/edit_contact',
-                                arguments: {
-                                  'contact': contact,
-                                  'noTransition': true
-                                });
-                          } else {
-                            _toggleSelection(contact.id!);
-                          }
-                        },
-                        onLongPress: () => _toggleSelection(contact.id!),
-                      ),
-                    );
-                  },
-                );
-              },
+            ContactList(
+              isFavorite: true,
+              searchQuery: _searchQuery,
+              selectedContacts: _selectedContacts,
+              toggleSelection: _toggleSelection,
             ),
           ],
         ),
@@ -397,7 +186,7 @@ class _ContactListScreenState extends State<ContactListScreen> {
         bottomNavigationBar: Container(
           margin: const EdgeInsets.symmetric(horizontal: 16.0), // Add margin
           decoration: BoxDecoration(
-            color: Colors.black12,
+            // color: Colors.transparent,
             borderRadius: const BorderRadius.only(
               topLeft: Radius.circular(30),
               topRight: Radius.circular(30),
